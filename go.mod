@@ -1,4 +1,4 @@
-module github.com/envdiff
+module github.com/nicholasgasior/envdiff
 
 go 1.21
 
