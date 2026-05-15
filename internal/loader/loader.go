@@ -71,6 +71,19 @@ func LoadMany(paths []string, opts Options) ([]parser.EnvMap, error) {
 	return maps, nil
 }
 
+// Exists reports whether the file at path exists on disk and is a regular file
+// (not a directory). It does not validate the file extension.
+func Exists(path string) (bool, error) {
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("checking file %s: %w", path, err)
+	}
+	return !info.IsDir(), nil
+}
+
 // validateExtension returns an error when path does not look like an env file.
 func validateExtension(path string) error {
 	base := filepath.Base(path)
