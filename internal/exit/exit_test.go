@@ -56,3 +56,19 @@ func TestCode_IntValues(t *testing.T) {
 		t.Errorf("Differences should be 2, got %d", exit.Differences)
 	}
 }
+
+func TestCode_String_AllKnown(t *testing.T) {
+	tests := []struct {
+		code exit.Code
+		want string
+	}{
+		{exit.OK, "ok"},
+		{exit.Err, "error"},
+		{exit.Differences, "differences"},
+	}
+	for _, tt := range tests {
+		if got := tt.code.String(); got != tt.want {
+			t.Errorf("Code(%d).String() = %q, want %q", tt.code, got, tt.want)
+		}
+	}
+}
