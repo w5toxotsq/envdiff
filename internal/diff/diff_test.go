@@ -83,3 +83,30 @@ func TestCompare_EmptyMaps(t *testing.T) {
 		t.Error("expected no diff for two empty maps")
 	}
 }
+
+func TestCompare_MultipleDiffTypes(t *testing.T) {
+	left := parser.EnvMap{"SHARED": "old", "ONLY_LEFT": "gone"}
+	right := parser.EnvMap{"SHARED": "new", "ONLY_RIGHT": "added"}
+
+	result := diff.Compare(left, right)
+	if !result.HasDiff() {
+		t.Fatal("expected differences, got none")
+	}
+	if len(result.Entries) != 3 {
+		t.Fatalf("expected 3 entries, got %d", len(result.Entries))
+	}
+
+	counts := map[diff.EntryType]int{}
+	for _, e := range result.Entries {
+		counts[e.Type]++
+	}
+	if counts[diff.ValueMismatch] != 1 {
+		t.Errorf("expected 1 ValueMismatch, got %d", counts[diff.ValueMismatch])
+	}
+	if counts[diff.MissingInRight] != 1 {
+		t.Errorf("expected 1 MissingInRight, got %d", counts[diff.MissingInRight])
+	}
+	if counts[diff.MissingInLeft] != 1 {
+		t.Errorf("expected 1 MissingInLeft, got %d", counts[diff.MissingInLeft])
+	}
+}
