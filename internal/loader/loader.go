@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/user/envdiff/internal/parser"
 )
@@ -55,16 +56,27 @@ func Load(path string, opts Options) (parser.EnvMap, error) {
 	return env, nil
 }
 
+// LoadMany loads multiple env files and returns their parsed key/value maps in
+// the same order as the provided paths. The first error encountered halts
+// processing and is returned immediately.
+func LoadMany(paths []string, opts Options) ([]parser.EnvMap, error) {
+	maps := make([]parser.EnvMap, 0, len(paths))
+	for _, p := range paths {
+		env, err := Load(p, opts)
+		if err != nil {
+			return nil, err
+		}
+		maps = append(maps, env)
+	}
+	return maps, nil
+}
+
 // validateExtension returns an error when path does not look like an env file.
 func validateExtension(path string) error {
 	base := filepath.Base(path)
-	ext := filepath.Ext(base)
-	// Accept .env, .env.* (e.g. .env.production) or files named exactly ".env".
-	if ext == ".env" || base == ".env" {
-		return nil
-	}
-	// Accept files whose name starts with ".env" (e.g. .env.local).
-	if len(base) > 4 && base[:4] == ".env" {
+	// Accept files named exactly ".env" or whose name starts with ".env"
+	// (e.g. .env.local, .env.production).
+	if base == ".env" || strings.HasPrefix(base, ".env.") {
 		return nil
 	}
 	return &ErrInvalidExtension{Path: path}
