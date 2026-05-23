@@ -83,3 +83,18 @@ func Detect(snap *snapshot.Snapshot, current map[string]string) []Change {
 
 	return changes
 }
+
+// Summary returns a brief human-readable description of the detected changes,
+// suitable for log output or CLI summaries. For example:
+// "3 change(s): 1 added, 1 removed, 1 modified"
+func Summary(changes []Change) string {
+	if len(changes) == 0 {
+		return "no drift detected"
+	}
+	counts := make(map[ChangeKind]int)
+	for _, c := range changes {
+		counts[c.Kind]++
+	}
+	return fmt.Sprintf("%d change(s): %d added, %d removed, %d modified",
+		len(changes), counts[Added], counts[Removed], counts[Modified])
+}
